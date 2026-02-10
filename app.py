@@ -29,51 +29,54 @@ html_code = f"""
         .study-wrapper {{ 
             position: relative; 
             display: inline-block; 
-            width: 800px; /* 表示サイズを固定してズレを防止 */
+            width: 800px; /* 横幅を固定してズレを防止 */
         }}
         .bg-image {{ 
             width: 100%; 
             display: block; 
         }}
 
-        /* ★スマホ画面内の配置（タイマーを右へ、少し下へ） */
+        /* ★スマホ画面内の配置（タイマーを大幅に右下へ移動） */
         .smartphone-screen {{ 
             position: absolute; 
-            top: 15%;    /* 「Study time」より下へ下げる */
-            left: 71%;   /* 右側のスマホの枠内へ移動 */
-            width: 110px;  
+            top: 28%;    /* スマホ画面の中央の高さへ */
+            left: 77%;   /* 右側の白い枠の中へ */
+            width: 130px;  
             text-align: center;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
         }}
 
         #timer {{ 
             font-family: 'Orbitron', sans-serif; 
-            font-size: 20px; /* スマホの枠に収まるサイズに調整 */
+            font-size: 24px; /* 枠に収まるサイズ */
             font-weight: bold; 
             color: #222; 
-            line-height: 1.2;
+            line-height: 1;
+            margin-bottom: 5px;
         }}
 
         .controls button {{ 
-            font-size: 8px; 
-            padding: 1px 4px; 
+            font-size: 9px; 
+            padding: 2px 6px; 
             cursor: pointer; 
         }}
 
         /* ★「勉強を終了する」ボタン（文字のすぐ下へ） */
         #finish-btn {{ 
             position: absolute; 
-            top: 75%;    /* 「努力は...」のすぐ下へ */
-            left: 28%;   /* ノートの中央寄りに微調整 */
-            padding: 6px 12px; 
+            top: 65%;    /* 「努力は...」のすぐ下に移動 */
+            left: 28%;   /* 文字の中央付近へ移動 */
+            padding: 8px 18px; 
             background-color: #fff; 
             border: 1px solid #ccc; 
-            border-radius: 4px;
+            border-radius: 6px;
             font-size: 16px; 
             font-weight: bold;
             cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }}
     </style>
 </head>
@@ -110,7 +113,7 @@ html_code = f"""
                 updateDisplay();
                 if (timeLeft <= 0) {{
                     clearInterval(timerId);
-                    alert("お疲れ様でした！");
+                    alert("時間です！お疲れ様でした。");
                 }}
             }}, 1000);
         }});
@@ -128,5 +131,5 @@ html_code = f"""
 </html>
 """
 
-# 表示サイズ設定
+# Streamlitの表示枠のサイズ
 components.html(html_code, height=600, width=900)
