@@ -30,7 +30,7 @@ html_code = f"""
         .study-wrapper {{ 
             position: relative; 
             display: inline-block; 
-            width: 800px; /* ここを変えると全体の大きさを調節できます */
+            width: 1000px; /* ここを変えると全体の大きさを調節できます */
         }}
         
         .bg-image {{ 
@@ -140,4 +140,4 @@ html_code = f"""
 """
 
 # Streamlit上の表示エリアサイズ（全体のサイズに合わせて調整）
-components.html(html_code, height=650, width=950)
+components.html(html_code, height=750, width=1050)
