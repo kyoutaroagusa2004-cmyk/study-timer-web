@@ -14,7 +14,7 @@ def get_image_base64(path):
     except FileNotFoundError:
         return ""
 
-# 背景画像の読み込み
+# 背景画像の読み込み（ファイル名が study.png であることを確認）
 img_base64 = get_image_base64("study.png")
 
 # HTML/CSS/JSコード
@@ -25,23 +25,23 @@ html_code = f"""
     <meta charset="UTF-8">
     <link href="https://fonts.googleapis.com" rel="stylesheet">
     <style>
-        body {{ margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; background-color: transparent; }}
+        body {{ margin: 0; padding: 0; display: flex; justify-content: center; background-color: transparent; }}
         .study-wrapper {{ 
             position: relative; 
             display: inline-block; 
-            width: 800px; /* 画像の表示サイズに合わせて調整 */
+            width: 800px; /* 表示サイズを固定してズレを防止 */
         }}
         .bg-image {{ 
             width: 100%; 
             display: block; 
         }}
 
-        /* ★タイマー（スマホの画面内）の位置調整 */
+        /* ★スマホ画面内の配置（タイマーを右へ、少し下へ） */
         .smartphone-screen {{ 
             position: absolute; 
-            top: 22%;    /* ％指定にしてズレを防止 */
-            left: 54%;   
-            width: 140px;  
+            top: 15%;    /* 「Study time」より下へ下げる */
+            left: 71%;   /* 右側のスマホの枠内へ移動 */
+            width: 110px;  
             text-align: center;
             display: flex;
             flex-direction: column;
@@ -50,29 +50,28 @@ html_code = f"""
 
         #timer {{ 
             font-family: 'Orbitron', sans-serif; 
-            font-size: 28px; 
+            font-size: 20px; /* スマホの枠に収まるサイズに調整 */
             font-weight: bold; 
             color: #222; 
-            line-height: 1;
-            margin-bottom: 5px;
+            line-height: 1.2;
         }}
 
         .controls button {{ 
-            font-size: 10px; 
-            padding: 2px 8px; 
+            font-size: 8px; 
+            padding: 1px 4px; 
             cursor: pointer; 
         }}
 
-        /* ★「勉強を終了する」ボタン（文字の真下へ） */
+        /* ★「勉強を終了する」ボタン（文字のすぐ下へ） */
         #finish-btn {{ 
             position: absolute; 
-            top: 70%;    /* 「努力は...」のすぐ下の位置 */
-            left: 33%;   
-            padding: 8px 16px; 
+            top: 75%;    /* 「努力は...」のすぐ下へ */
+            left: 28%;   /* ノートの中央寄りに微調整 */
+            padding: 6px 12px; 
             background-color: #fff; 
             border: 1px solid #ccc; 
-            border-radius: 5px;
-            font-size: 18px; 
+            border-radius: 4px;
+            font-size: 16px; 
             font-weight: bold;
             cursor: pointer;
         }}
@@ -129,5 +128,5 @@ html_code = f"""
 </html>
 """
 
-# Streamlitの表示サイズ設定
+# 表示サイズ設定
 components.html(html_code, height=600, width=900)
