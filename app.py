@@ -40,7 +40,7 @@ html_code = f"""
         .smartphone-screen {{ 
             position: absolute; 
             top: 25%;    
-            left: 77%;   
+            left: 77.2%;   
             width: 130px;  
             text-align: center;
             display: flex;
@@ -50,34 +50,38 @@ html_code = f"""
 
         #timer {{ 
             font-family: 'Orbitron', sans-serif; 
-            font-size: 24px; 
+            font-size: 26px; 
             font-weight: bold; 
             color: #222; 
             line-height: 1;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
         }}
 
+        .controls {{ display: flex; gap: 4px; }}
         .controls button {{ 
-            font-size: 9px; 
-            padding: 2px 6px; 
+            font-size: 8px; 
+            padding: 1px 4px; 
             cursor: pointer; 
+            border-radius: 2px;
+            border: 1px solid #ccc;
+            background: #fff;
         }}
 
-        /* ★「勉強を終了する」ボタン（文字の真下へ移動） */
+        /* ★「勉強を終了する」ボタン（文字の「真下」へ移動） */
         #finish-btn {{ 
             position: absolute; 
-            top: 51%;    /* 文字「努力は...」のすぐ下に移動 */
-            left: 48%;   /* 右へ移動して、文字の中央付近へ配置 */
-            transform: translateX(-50%); /* 中央寄せを正確に */
-            padding: 6px 14px; 
+            top: 73%;    /* 努力は...の文字の下へ引き下げる */
+            left: 48%;   /* 文字の中央付近へ */
+            transform: translateX(-50%); 
+            padding: 5px 12px; 
             background-color: #fff; 
-            border: 1px solid #ccc; 
+            border: 1px solid #ddd; 
             border-radius: 4px;
-            font-size: 15px; 
+            font-size: 14px; 
             font-weight: bold;
-            color: #444;
+            color: #555;
             cursor: pointer;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
             white-space: nowrap;
         }}
     </style>
@@ -113,6 +117,10 @@ html_code = f"""
             timerId = setInterval(() => {{
                 if (timeLeft > 0) timeLeft--;
                 updateDisplay();
+                if (timeLeft <= 0) {{
+                    clearInterval(timerId);
+                    alert("お疲れ様でした！");
+                }}
             }}, 1000);
         }});
 
