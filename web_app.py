@@ -106,6 +106,7 @@ bg_img = WALLPAPER_MAP.get(items["壁紙"], WALLPAPER_MAP["白壁"])
 tbl_img = TABLE_MAP.get(items["テーブル"], TABLE_MAP["丸太のテーブル"])
 overlay_color = get_time_style()
 
+# unsafe_allow_html=True を使い、画像のようなバグを修正
 st.markdown(f"""
     <style>
     .stApp {{ background: url("{bg_img}"); background-size: cover; background-position: center; }}
