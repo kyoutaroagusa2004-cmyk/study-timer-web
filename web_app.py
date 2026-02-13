@@ -28,7 +28,7 @@ def load_data():
     return {
         "total_beans": 0, "logs": [], "cafe_name": "My Coffee",
         "unlocked_items": ["白壁", "丸太のテーブル", "なし"], 
-        "current_items": {"テーブル": "丸太 of テーブル", "壁紙": "白壁", "看板": "なし"},
+        "current_items": {"テーブル": "丸太のテーブル", "壁紙": "白壁", "看板": "なし"},
         "unlocked_sounds": ["デフォルトベル"], "current_sound": "デフォルトベル"
     }
 
