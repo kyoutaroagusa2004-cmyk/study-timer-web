@@ -37,7 +37,7 @@ def save_data(data):
 if 'user_data' not in st.session_state:
     st.session_state.user_data = load_data()
 
-# --- 3. ショップ・ビジュアル素材 (直接表示される高画質URL) ---
+# --- 3. ショップ・ビジュアル素材 ---
 WALLPAPER_MAP = {
     "白壁": "https://images.unsplash.com",
     "レンガのカフェ": "https://images.unsplash.com",
