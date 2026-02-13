@@ -14,10 +14,11 @@ def load_data():
     if os.path.exists(DATA_FILE):
         with open(DATA_FILE, "r", encoding="utf-8") as f:
             data = json.load(f)
+            # 必要なキーがない場合の補完
             defaults = {
                 "total_beans": 0, "logs": [], "cafe_name": "My Coffee",
-                "unlocked_items": ["白壁", "丸太のテーブル", "なし"], 
-                "current_items": {"テーブル": "丸太のテーブル", "壁紙": "白壁", "看板": "なし"},
+                "unlocked_items": ["白壁", "丸太のテーブル"], 
+                "current_items": {"テーブル": "丸太のテーブル", "壁紙": "白壁"},
                 "unlocked_sounds": ["デフォルトベル"], "current_sound": "デフォルトベル"
             }
             for k, v in defaults.items():
@@ -25,8 +26,8 @@ def load_data():
             return data
     return {
         "total_beans": 0, "logs": [], "cafe_name": "My Coffee",
-        "unlocked_items": ["白壁", "丸太のテーブル", "なし"], 
-        "current_items": {"テーブル": "丸太のテーブル", "壁紙": "白壁", "看板": "なし"},
+        "unlocked_items": ["白壁", "丸太のテーブル"], 
+        "current_items": {"テーブル": "丸太のテーブル", "壁紙": "白壁"},
         "unlocked_sounds": ["デフォルトベル"], "current_sound": "デフォルトベル"
     }
 
@@ -37,7 +38,7 @@ def save_data(data):
 if 'user_data' not in st.session_state:
     st.session_state.user_data = load_data()
 
-# --- 3. ショップ・ビジュアル素材 ---
+# --- 3. ビジュアル素材（具体的な画像URLを設定） ---
 WALLPAPER_MAP = {
     "白壁": "https://images.unsplash.com",
     "レンガのカフェ": "https://images.unsplash.com",
@@ -69,9 +70,9 @@ INTERIOR_SHOP = {
 def get_time_style():
     hour = datetime.datetime.now().hour
     if 18 <= hour or hour < 6:
-        return "rgba(0, 0, 50, 0.5)" # 夜
+        return "rgba(0, 0, 50, 0.4)" # 夜
     elif 16 <= hour < 18:
-        return "rgba(255, 100, 0, 0.3)" # 夕方
+        return "rgba(255, 100, 0, 0.2)" # 夕方
     else:
         return "rgba(0, 0, 0, 0)" # 昼
 
@@ -136,8 +137,8 @@ st.markdown(f"""
     }}
     .table-img {{
         width: 100%;
-        max-width: 400px;
-        height: 250px;
+        max-width: 450px;
+        height: 280px;
         object-fit: cover;
         border-radius: 20px;
         margin: 20px 0;
@@ -216,32 +217,32 @@ with tab3: # スリープ
 
 with tab4: # ショップ
     st.subheader(f"🛒 ショップ (現在の所持: {st.session_state.user_data['total_beans']} 🫘)")
-    for cat, items_dict in INTERIOR_SHOP.items():
-        st.write(f"--- {cat} ---")
-        cols = st.columns(2)
-        for i, (name, price) in enumerate(items_dict.items()):
-            with cols[i % 2]:
-                is_owned = name in st.session_state.user_data["unlocked_items"] or name in st.session_state.user_data["unlocked_sounds"]
-                label = f"✅ {name}" if is_owned else f"{name} ({price} 🫘)"
-                if st.button(label, key=f"shop_{name}", disabled=is_owned, use_container_width=True):
-                    if st.session_state.user_data["total_beans"] >= price:
-                        st.session_state.user_data["total_beans"] -= price
-                        if cat == "音": st.session_state.user_data["unlocked_sounds"].append(name)
-                        else: st.session_state.user_data["unlocked_items"].append(name)
-                        save_data(st.session_state.user_data)
-                        st.success(f"✨ {name} を入手！")
-                        st.rerun()
-                    else: st.error("豆が足りません...")
+    cols = st.columns(3)
+    for i, (cat, items_dict) in enumerate(INTERIOR_SHOP.items()):
+        with cols[i % 3]:
+            st.markdown(f"### {cat}")
+            for item_name, price in items_dict.items():
+                is_unlocked = item_name in st.session_state.user_data["unlocked_items"] or \
+                              item_name in st.session_state.user_data["unlocked_sounds"]
+                
+                if is_unlocked:
+                    st.button(f"✅ {item_name}", disabled=True, key=f"bought_{item_name}")
+                else:
+                    if st.button(f"{item_name} ({price} 🫘)", key=f"buy_{item_name}"):
+                        if st.session_state.user_data["total_beans"] >= price:
+                            st.session_state.user_data["total_beans"] -= price
+                            target_list = "unlocked_sounds" if cat == "音" else "unlocked_items"
+                            st.session_state.user_data[target_list].append(item_name)
+                            save_data(st.session_state.user_data)
+                            st.rerun()
+                        else:
+                            st.error("豆が足りません")
 
 with tab5: # ログ
-    st.subheader("📊 学習データ")
+    st.subheader("📊 学習の記録")
     if st.session_state.user_data["logs"]:
-        st.dataframe(st.session_state.user_data["logs"][::-1], use_container_width=True)
-        if st.button("全ての記録を消去"):
-            st.session_state.user_data["logs"] = []
-            save_data(st.session_state.user_data)
-            st.rerun()
-    else: st.info("データがありません。")
-
-st.markdown("---")
-st.caption("Study Coffee Pro+ | Your Virtual Study Space")
+        import pandas as pd
+        df = pd.DataFrame(st.session_state.user_data["logs"])
+        st.table(df.tail(10))
+    else:
+        st.write("まだ記録がありません")
