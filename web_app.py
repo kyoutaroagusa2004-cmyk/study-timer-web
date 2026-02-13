@@ -3,7 +3,6 @@ import time
 import datetime
 import os
 import json
-import random
 
 # --- 1. ページ設定 ---
 st.set_page_config(page_title="Study Coffee Pro+", page_icon="☕", layout="wide")
@@ -15,7 +14,6 @@ def load_data():
     if os.path.exists(DATA_FILE):
         with open(DATA_FILE, "r", encoding="utf-8") as f:
             data = json.load(f)
-            # 項目が足りない場合の初期設定
             defaults = {
                 "total_beans": 0, "logs": [], "cafe_name": "My Coffee",
                 "unlocked_items": ["白壁", "丸太のテーブル", "なし"], 
@@ -39,7 +37,7 @@ def save_data(data):
 if 'user_data' not in st.session_state:
     st.session_state.user_data = load_data()
 
-# --- 3. ショップ・ビジュアル素材 ---
+# --- 3. ショップ・ビジュアル素材 (具体的なURLに修正) ---
 WALLPAPER_MAP = {
     "白壁": "https://images.unsplash.com",
     "レンガのカフェ": "https://images.unsplash.com",
@@ -67,17 +65,17 @@ INTERIOR_SHOP = {
     "音": {"カフェの喧騒": 10, "森の鳥": 20}
 }
 
-# --- 4. 時間連動（夜になると暗くなる） ---
+# --- 4. 時間連動 ---
 def get_time_style():
     hour = datetime.datetime.now().hour
     if 18 <= hour or hour < 6:
-        return "rgba(0, 0, 50, 0.4)" # 夜：青暗い
+        return "rgba(0, 0, 50, 0.5)" # 夜
     elif 16 <= hour < 18:
-        return "rgba(255, 100, 0, 0.2)" # 夕方：オレンジ
+        return "rgba(255, 100, 0, 0.3)" # 夕方
     else:
-        return "rgba(0, 0, 0, 0)" # 昼：透明
+        return "rgba(0, 0, 0, 0)" # 昼
 
-# --- 5. サイドバー (世界時計・模様替え) ---
+# --- 5. サイドバー ---
 with st.sidebar:
     st.header("🌍 World Clock")
     now = datetime.datetime.now()
@@ -91,40 +89,68 @@ with st.sidebar:
     st.session_state.user_data["cafe_name"] = st.text_input("カフェの名前", st.session_state.user_data["cafe_name"])
     
     for cat in ["壁紙", "テーブル"]:
-        options = [i for i in st.session_state.user_data["unlocked_items"] if i in INTERIOR_SHOP.get(cat, {}) or i in ["白壁", "丸太のテーブル"]]
-        st.session_state.user_data["current_items"][cat] = st.selectbox(f"{cat}を選択", options, key=f"select_{cat}")
+        # 解放済みアイテムのみを選択肢に
+        unlocked = st.session_state.user_data["unlocked_items"]
+        default_val = "白壁" if cat == "壁紙" else "丸太のテーブル"
+        options = [k for k in (WALLPAPER_MAP if cat=="壁紙" else TABLE_MAP).keys() if k in unlocked or k == default_val]
+        
+        current = st.session_state.user_data["current_items"].get(cat, default_val)
+        idx = options.index(current) if current in options else 0
+        st.session_state.user_data["current_items"][cat] = st.selectbox(f"{cat}を選択", options, index=idx, key=f"select_{cat}")
     
     st.session_state.user_data["current_sound"] = st.selectbox("アラーム音", st.session_state.user_data["unlocked_sounds"])
 
-    if st.button("設定を保存して更新"):
+    if st.button("設定を保存して更新", use_container_width=True):
         save_data(st.session_state.user_data)
         st.rerun()
 
 # --- 6. カフェ画面の描画 ---
 items = st.session_state.user_data["current_items"]
-bg_img = WALLPAPER_MAP.get(items["壁紙"], WALLPAPER_MAP["白壁"])
-tbl_img = TABLE_MAP.get(items["テーブル"], TABLE_MAP["丸太のテーブル"])
+bg_img = WALLPAPER_MAP.get(items.get("壁紙"), WALLPAPER_MAP["白壁"])
+tbl_img = TABLE_MAP.get(items.get("テーブル"), TABLE_MAP["丸太のテーブル"])
 overlay_color = get_time_style()
 
-# unsafe_allow_html=True を使い、画像のようなバグを修正
 st.markdown(f"""
     <style>
-    .stApp {{ background: url("{bg_img}"); background-size: cover; background-position: center; }}
-    .night-overlay {{ position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: {overlay_color}; pointer-events: none; z-index: 1; }}
-    .cafe-container {{
-        background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(10px);
-        padding: 40px; border-radius: 20px; text-align: center; color: white;
-        border: 1px solid rgba(255,255,255,0.2); position: relative; z-index: 2;
+    .stApp {{
+        background: url("{bg_img}");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
     }}
-    .table-img {{ width: 250px; border-radius: 15px; margin: 20px 0; border-bottom: 8px solid #222; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }}
-    @keyframes blink {{ 0%{{opacity:0;}} 50%{{opacity:1;}} 100%{{opacity:0;}} }}
-    .blink {{ animation: blink 1.5s infinite; }}
+    .night-overlay {{
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: {overlay_color}; pointer-events: none; z-index: 1;
+    }}
+    .cafe-container {{
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(8px);
+        padding: 40px;
+        border-radius: 25px;
+        text-align: center;
+        color: white;
+        border: 1px solid rgba(255,255,255,0.3);
+        position: relative;
+        z-index: 2;
+        margin-top: 20px;
+    }}
+    .table-img {{
+        width: 300px;
+        height: 180px;
+        object-fit: cover;
+        border-radius: 20px;
+        margin: 20px 0;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.7);
+        border: 4px solid rgba(255,255,255,0.1);
+    }}
+    @keyframes blink {{ 0%{{opacity:0.2;}} 50%{{opacity:1;}} 100%{{opacity:0.2;}} }}
+    .blink {{ animation: blink 2s infinite; font-weight: bold; color: #ffeb3b; }}
     </style>
     <div class="night-overlay"></div>
     <div class="cafe-container">
-        <h1 style="text-shadow: 2px 2px 8px black; margin:0;">{st.session_state.user_data["cafe_name"]}</h1>
+        <h1 style="font-size: 3rem; text-shadow: 3px 3px 10px rgba(0,0,0,1); margin-bottom: 10px;">{st.session_state.user_data["cafe_name"]}</h1>
         <img src="{tbl_img}" class="table-img">
-        <p style="font-size: 20px;">☕ Studying... <span class="blink">_</span></p>
+        <p style="font-size: 24px; letter-spacing: 2px;">☕ <span class="blink">Studying...</span></p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -139,17 +165,20 @@ with tab1: # ポモドーロタイマー
     col1, col2 = st.columns(2)
     with col1:
         mode = st.radio("モード", ["勉強 (25分)", "休憩 (5分)"], horizontal=True)
+    with col2:
         memo = st.text_input("アラーム用メモ", placeholder="終わったらストレッチ！")
     
-    if st.button("タイマー開始"):
+    if st.button("タイマー開始", use_container_width=True):
         t_min = 25 if "勉強" in mode else 5
         ph = st.empty()
         for t in range(t_min * 60, -1, -1):
             mm, ss = divmod(t, 60)
             ph.metric("残り時間", f"{mm:02d}:{ss:02d}")
             time.sleep(1)
+        
         # 完了処理
-        st.session_state.user_data["total_beans"] += (t_min // 10 if "勉強" in mode else 0)
+        beans_earned = (t_min // 5) if "勉強" in mode else 0
+        st.session_state.user_data["total_beans"] += beans_earned
         st.session_state.user_data["logs"].append({"date": datetime.datetime.now().strftime('%m/%d %H:%M'), "mode": mode, "min": t_min})
         save_data(st.session_state.user_data)
         play_alarm()
@@ -161,10 +190,10 @@ with tab2: # ストップウォッチ
     st.subheader("⏱️ 自由計測")
     sw_ph = st.empty()
     c1, c2 = st.columns(2)
-    if c1.button("計測開始", key="sw_start"):
+    if c1.button("計測開始", use_container_width=True):
         st.session_state.sw_start = time.time()
         st.session_state.sw_running = True
-    if c2.button("ストップ & 保存", key="sw_stop"):
+    if c2.button("ストップ & 保存", use_container_width=True):
         if "sw_start" in st.session_state:
             elapsed = int((time.time() - st.session_state.sw_start) // 60)
             st.session_state.user_data["total_beans"] += (elapsed // 10)
@@ -173,6 +202,7 @@ with tab2: # ストップウォッチ
             st.session_state.sw_running = False
             st.success(f"{elapsed}分記録しました！")
             st.rerun()
+    
     if st.session_state.get("sw_running", False):
         while st.session_state.sw_running:
             diff = int(time.time() - st.session_state.sw_start)
@@ -183,7 +213,7 @@ with tab2: # ストップウォッチ
 with tab3: # スリープタイマー
     s_min = st.number_input("アラーム設定（分）", 1, 120, 60)
     s_note = st.text_input("終了メッセージ", "起きて！")
-    if st.button("スリープタイマー開始"):
+    if st.button("スリープタイマー開始", use_container_width=True):
         ph = st.empty()
         for t in range(s_min * 60, -1, -1):
             mm, ss = divmod(t, 60)
@@ -195,23 +225,36 @@ with tab3: # スリープタイマー
 with tab4: # ショップ
     st.subheader("🛒 インテリアショップ")
     st.write(f"現在の所持: {st.session_state.user_data['total_beans']} 🫘")
-    for cat, items in INTERIOR_SHOP.items():
+    for cat, items_dict in INTERIOR_SHOP.items():
         st.write(f"#### {cat}")
         cols = st.columns(2)
-        for i, (name, price) in enumerate(items.items()):
+        for i, (name, price) in enumerate(items_dict.items()):
             with cols[i % 2]:
                 is_owned = name in st.session_state.user_data["unlocked_items"] or name in st.session_state.user_data["unlocked_sounds"]
-                if st.button(f"{name} ({price}🫘)", key=f"buy_{name}", disabled=is_owned):
+                btn_label = f"✅ {name}" if is_owned else f"{name} ({price} 🫘)"
+                if st.button(btn_label, key=f"buy_{name}", disabled=is_owned, use_container_width=True):
                     if st.session_state.user_data["total_beans"] >= price:
                         st.session_state.user_data["total_beans"] -= price
-                        if cat == "音": st.session_state.user_data["unlocked_sounds"].append(name)
-                        else: st.session_state.user_data["unlocked_items"].append(name)
+                        if cat == "音":
+                            st.session_state.user_data["unlocked_sounds"].append(name)
+                        else:
+                            st.session_state.user_data["unlocked_items"].append(name)
                         save_data(st.session_state.user_data)
-                        st.success(f"{name} を購入しました！")
+                        st.success(f"✨ {name} を購入しました！")
                         st.rerun()
-                    else: st.error("豆が足りません！")
+                    else:
+                        st.error("豆が足りません！")
 
-with tab5: # 履歴
+with tab5: # ログ
     st.subheader("📊 学習記録")
-    for log in reversed(st.session_state.user_data["logs"]):
-        st.text(f"📅 {log['date']} | {log['mode']} | {log['min']}分")
+    if st.session_state.user_data["logs"]:
+        st.table(st.session_state.user_data["logs"][::-1])
+        if st.button("ログをリセット"):
+            st.session_state.user_data["logs"] = []
+            save_data(st.session_state.user_data)
+            st.rerun()
+    else:
+        st.info("まだ記録がありません。")
+
+st.markdown("---")
+st.caption("Study Coffee Pro+ | 集中力を高めるための仮想カフェ空間")
